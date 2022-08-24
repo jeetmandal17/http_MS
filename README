@@ -2,5 +2,9 @@ README COMMIT
 
 How to make use of the following server ? [Make use of POSTMAN]
 COMMANDS FOR THE FOLLOWING USAGE:
-GET: curl "localhost:9090/GAD" -v | jq
+GET API1 : Get all the website status: curl "localhost:9090/" -v | jq
+GET API2 : Get the queried website from the server: curl "localhost:9090/GET?website=www.xyzz.com" -v | jq
+POST API3: Update the websites which are to be updated: curl "localhost:9090/POST" -d '[{"url":"www.google.com"},{"url":"www.facebook.com"},{"url":"www.xyzz.com"}]' | jq
+
+
 
