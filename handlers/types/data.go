@@ -1,73 +1,76 @@
 package types
 
-import(
+import (
 	"sync"
 )
 
-
 // Create in-memory database storage for the websites
-var webCollection map[string]bool
+var webCollection map[string]string
 
-// Structure to decode the JSON object
+// Structure to decode the JSON object [Not for instantiation]
 type WebsiteRequest struct {
 	URL string `json:"url"`
 }
 
-// Structure to store the respsonse
+// Structure to store the response
 type WebsiteResponse struct {
-	URL string		`json:"url"`
-	Active bool		`json:"status"`
+	URL       string `json:"url"`
+	Available string `json:"inlist"`
+	Active    string `json:"status"`
 }
 
 // create a new Website instance
-func NewWebsiteResponse(URL string, Active bool) (*WebsiteResponse){
+func NewWebsiteResponse(URL string, Available string, Active string) *WebsiteResponse {
 	return &WebsiteResponse{
-		URL: URL,
-		Active: Active,
+		URL:       URL,
+		Available: Available,
+		Active:    Active,
 	}
 }
 
 // Get the list of all the websites
-func GetWebsitesList() ([]string){
+func GetWebsitesList() []string {
 
 	//Create a list to return the websites
-	websiteList := []string{}
+	var websiteList []string
 
-	for key := range webCollection{
+	// Iterate over the in-memory database
+	for key := range webCollection {
 		websiteList = append(websiteList, key)
 	}
 
 	return websiteList
 }
 
-// Add to the website inmemory storage
-func UpdateWebsiteCollection(newWebsiteCollection []WebsiteRequest){
+// Add to the website in-memory storage
+func UpdateWebsiteCollection(newWebsiteCollection []WebsiteRequest) {
 
-	newTempCollection := map[string]bool{}
+	newTempCollection := map[string]string{}
 
-	for _, item := range newWebsiteCollection{
-		newTempCollection[item.URL] = false
+	// Initialize the default state as "NIL"
+	for _, item := range newWebsiteCollection {
+		newTempCollection[item.URL] = "NIL"
 	}
 
 	webCollection = newTempCollection
 }
 
-// Update Website map by each goroutine 
-func UpdateWebsiteStatus(m *sync.Mutex, URL string, Active bool){
+// Update Website map by each goroutine
+func UpdateWebsiteStatus(m *sync.Mutex, URL string, Active string) {
 	//Updating the corresponding map value
 	m.Lock()
-		webCollection[URL] = Active
+	webCollection[URL] = Active
 	m.Unlock()
 }
 
 // Get all the data from the map
-func GetAllCollections() ([]WebsiteResponse){
+func GetAllCollections() []WebsiteResponse {
 
 	// Create a temporary instance
-	websiteCollectionResponse := []WebsiteResponse{}
+	var websiteCollectionResponse []WebsiteResponse
 
-	for key := range webCollection{
-		newWR := NewWebsiteResponse(key, webCollection[key])
+	for key := range webCollection {
+		newWR := NewWebsiteResponse(key, "YES", webCollection[key])
 		websiteCollectionResponse = append(websiteCollectionResponse, *newWR)
 	}
 
@@ -75,6 +78,11 @@ func GetAllCollections() ([]WebsiteResponse){
 }
 
 // Get the queried response from the map
-func GetQueriedResponse(websiteURL string) (*WebsiteResponse){
-	return NewWebsiteResponse(websiteURL, webCollection[websiteURL])
+func GetQueriedResponse(websiteURL string) *WebsiteResponse {
+
+	// Perform a check for the presence of the website
+	if _, ok := webCollection[websiteURL]; ok != true {
+		return NewWebsiteResponse(websiteURL, "NO", "NIL")
+	}
+	return NewWebsiteResponse(websiteURL, "YES", webCollection[websiteURL])
 }

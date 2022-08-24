@@ -3,50 +3,52 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/httpMS/Commons"
+	"github.com/httpMS/handlers/types"
 	"io"
 	"log"
 	"net/http"
-	"time"
-
-	"github.com/httpMS/handlers/types"
 )
 
-type UpdateList struct{
+type UpdateList struct {
 	l *log.Logger
 }
 
-func NewUpdateList(log *log.Logger) (*UpdateList){
+func NewUpdateList(log *log.Logger) *UpdateList {
 	return &UpdateList{
 		l: log,
 	}
 }
 
-func (u *UpdateList) ServeHTTP(rw http.ResponseWriter, r *http.Request){
+func (u *UpdateList) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	// Logging on the server side
 	u.l.Println("Update list for updating the list")
+
+	// Logging on client side as ACK
+	_, err := fmt.Fprint(rw, "Updating the list on server side")
+	if err != nil {
+		// Logging the error in the server logger
+		u.l.Println(Commons.ErrWritingOnClientSide, err)
+	}
 
 	// Handling the Update list
 	updateData, err := io.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("Error in getting the update values")
+		u.l.Println(Commons.ErrReadingRequestBody, err)
 	}
 
 	// Create a WebsiteRequest array to store the values
-	webRequests := []types.WebsiteRequest{}
+	var webRequests []types.WebsiteRequest
 
 	// Unmarshal the JSON object
 	err = json.Unmarshal(updateData, &webRequests)
 	if err != nil {
-		fmt.Println("cannot unmarshal the data into struct", err)
+		u.l.Println(Commons.ErrUnmarshalJSON, err)
 	}
 
 	// Update tge Website collection in the IN-MEMORY map
 	types.UpdateWebsiteCollection(webRequests)
 
-	// Launch the CheckWebites service
-	for {
-		types.CheckWebsites()
-
-		// Check for the websites every 10 seconds
-		time.Sleep(10*time.Second)
-	}
+	// Start the monitoring service
+	types.InitializeMonitoring()
 }

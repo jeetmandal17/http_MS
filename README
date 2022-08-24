@@ -1,1 +1,6 @@
 README COMMIT
+
+How to make use of the following server ? [Make use of POSTMAN]
+COMMANDS FOR THE FOLLOWING USAGE:
+GET: curl "localhost:9090/GAD" -v | jq
+
