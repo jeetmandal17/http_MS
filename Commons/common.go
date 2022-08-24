@@ -1,5 +1,9 @@
 package Commons
 
+var (
+	RoutineID = 0
+)
+
 // Error Constants for the entire projects
 const (
 	ErrWritingOnClientSide = "error on writing on client side"

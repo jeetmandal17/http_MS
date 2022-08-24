@@ -50,5 +50,7 @@ func (u *UpdateList) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	types.UpdateWebsiteCollection(webRequests)
 
 	// Start the monitoring service
-	types.InitializeMonitoring()
+	Commons.RoutineID = Commons.RoutineID + 1
+	go types.InitializeMonitoring(Commons.RoutineID)
+
 }
