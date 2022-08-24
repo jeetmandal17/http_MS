@@ -3,34 +3,58 @@ package types
 import (
 	"fmt"
 	"github.com/httpMS/Commons"
+	"log"
 	"net/http"
-	"runtime"
 	"sync"
 	"time"
 )
 
-func InitializeMonitoring(RoutineID int) {
+// Implement an interface to encapsulate the website Checker
+type StatusChecker interface {
+	InitializeMonitoring(RoutineId int)
+}
+
+// An instance for Monitoring service
+type httpChecker struct {
+	logEvents *log.Logger
+	RoutineID int
+}
+
+// Create an instance of the Service
+func NewhttpChecker(logEvents *log.Logger, RoutineID int) *httpChecker {
+	return &httpChecker{
+		logEvents: logEvents,
+		RoutineID: RoutineID,
+	}
+}
+
+// This is the required function for monitoring
+func (h httpChecker) InitializeMonitoring() {
 
 	// Ping the websites periodically
 	// Launch the CheckWebsites service
 
 	// checking how many go routines are running
-	fmt.Println(RoutineID)
-	fmt.Println(runtime.NumGoroutine())
+	//fmt.Println(h.RoutineID)
+	//fmt.Println(runtime.NumGoroutine())
 	for {
 		// check if there is a new Routine or not
-		if RoutineID != Commons.RoutineID {
+		if h.RoutineID != Commons.RoutineID {
 			// Stop this instance
-			fmt.Println(RoutineID, " - ", Commons.RoutineID)
+			fmt.Println(h.RoutineID, " - ", Commons.RoutineID)
 			break
 		}
 
 		// Check for the listed websites
+		h.logEvents.Println("")
 		CheckWebsites()
 
 		// Check for the websites every 10 seconds
 		time.Sleep(60 * time.Second)
 	}
+
+	// Close this task and record the event
+	h.logEvents.Println("Dumping the Old Status Checker Instance with ID: ", h.RoutineID)
 }
 
 // This function is used to ping the required server

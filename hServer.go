@@ -12,10 +12,10 @@ import (
 	// "github.com/httpMS/handlers/types"
 )
 
-func main(){
+func main() {
 
 	// Http handlers instance creation
-	l := log.New(os.Stdout, "monitor-api ", log.LstdFlags)
+	l := log.New(os.Stdout, "monitor-service", log.LstdFlags)
 
 	// Create HTTP handler for GET handlers
 	getAllDataHandler := handlers.NewAllData(l)
@@ -24,15 +24,14 @@ func main(){
 
 	// Create a new serveMux for redirecting the request path
 	newServerMux := http.NewServeMux()
-	newServerMux.Handle("/GAD", getAllDataHandler)
-	newServerMux.Handle("/", getQueryDataHandler)
-	newServerMux.Handle("/P", getWebsiteUpdater)
-
+	newServerMux.Handle("/", getAllDataHandler)
+	newServerMux.Handle("/GET", getQueryDataHandler)
+	newServerMux.Handle("/POST", getWebsiteUpdater)
 
 	// Creating a new server configuration
 	serverConfig := http.Server{
-		Addr:         ":9090",      // configure the bind address
-		Handler:      newServerMux,                // set the default handler
+		Addr:         ":9090",           // configure the bind address
+		Handler:      newServerMux,      // set the default handler
 		ErrorLog:     l,                 // set the logger for the server
 		ReadTimeout:  5 * time.Second,   // max time to read request from the client
 		WriteTimeout: 10 * time.Second,  // max time to write response to the client

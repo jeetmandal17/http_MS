@@ -11,23 +11,23 @@ import (
 )
 
 type Query struct {
-	l *log.Logger
+	logErrors *log.Logger
 }
 
 func NewQuery(log *log.Logger) *Query {
 	return &Query{
-		l: log,
+		logErrors: log,
 	}
 }
 
 func (q *Query) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	// Logging on the server side
-	q.l.Println("Get the Queried website")
+	q.logErrors.Println("Get the Queried website")
 
 	// Logging on client side as aCK
 	_, err := fmt.Fprint(rw, "Sending the Queried website Status")
 	if err != nil {
-		q.l.Println(Commons.ErrWritingOnClientSide, err)
+		q.logErrors.Println(Commons.ErrWritingOnClientSide, err)
 	}
 
 	// Handling the GET request for queried data
@@ -39,7 +39,7 @@ func (q *Query) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	// Convert in JSON object
 	JSONQueryOutput, err := json.Marshal(websiteResponse)
 	if err != nil {
-		q.l.Println(Commons.ErrMarshalJSON, err)
+		q.logErrors.Println(Commons.ErrMarshalJSON, err)
 	}
 
 	// Write the JSON object on client side

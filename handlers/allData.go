@@ -11,12 +11,12 @@ import (
 )
 
 type AllData struct {
-	l *log.Logger
+	logErrors *log.Logger
 }
 
 func NewAllData(log *log.Logger) *AllData {
 	return &AllData{
-		l: log,
+		logErrors: log,
 	}
 }
 
@@ -24,12 +24,12 @@ func NewAllData(log *log.Logger) *AllData {
 func (a *AllData) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	// Logging on server side
-	a.l.Println("Handling the Access all data query")
+	a.logErrors.Println("Handling the Access all data query")
 
 	// Logging on client side to get an ACK
 	_, err := fmt.Fprint(rw, "Sending all the data to client")
 	if err != nil {
-		a.l.Println(Commons.ErrWritingOnClientSide, err)
+		a.logErrors.Println(Commons.ErrWritingOnClientSide, err)
 	}
 	// Return data to the client
 	websiteResponseList := types.GetAllCollections()
@@ -37,7 +37,7 @@ func (a *AllData) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	// Convert in JSON object
 	JSONQueryOutput, err := json.Marshal(websiteResponseList)
 	if err != nil {
-		a.l.Println(Commons.ErrMarshalJSON, err)
+		a.logErrors.Println(Commons.ErrMarshalJSON, err)
 	}
 
 	// Convert into JSON object

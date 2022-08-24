@@ -8,33 +8,34 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 type UpdateList struct {
-	l *log.Logger
+	logErrors *log.Logger
 }
 
 func NewUpdateList(log *log.Logger) *UpdateList {
 	return &UpdateList{
-		l: log,
+		logErrors: log,
 	}
 }
 
 func (u *UpdateList) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	// Logging on the server side
-	u.l.Println("Update list for updating the list")
+	u.logErrors.Println("Update list for updating the list")
 
 	// Logging on client side as ACK
 	_, err := fmt.Fprint(rw, "Updating the list on server side")
 	if err != nil {
 		// Logging the error in the server logger
-		u.l.Println(Commons.ErrWritingOnClientSide, err)
+		u.logErrors.Println(Commons.ErrWritingOnClientSide, err)
 	}
 
 	// Handling the Update list
 	updateData, err := io.ReadAll(r.Body)
 	if err != nil {
-		u.l.Println(Commons.ErrReadingRequestBody, err)
+		u.logErrors.Println(Commons.ErrReadingRequestBody, err)
 	}
 
 	// Create a WebsiteRequest array to store the values
@@ -43,7 +44,7 @@ func (u *UpdateList) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	// Unmarshal the JSON object
 	err = json.Unmarshal(updateData, &webRequests)
 	if err != nil {
-		u.l.Println(Commons.ErrUnmarshalJSON, err)
+		u.logErrors.Println(Commons.ErrUnmarshalJSON, err)
 	}
 
 	// Update tge Website collection in the IN-MEMORY map
@@ -51,6 +52,11 @@ func (u *UpdateList) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	// Start the monitoring service
 	Commons.RoutineID = Commons.RoutineID + 1
-	go types.InitializeMonitoring(Commons.RoutineID)
 
+	// Create a new logger for the new instance
+	l := log.New(os.Stdout, "httpStatus-api", log.LstdFlags)
+
+	// Get the instance from the interface
+	httpStatusCheckerInstance := types.NewhttpChecker(l, Commons.RoutineID)
+	go httpStatusCheckerInstance.InitializeMonitoring()
 }
